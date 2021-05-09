@@ -1,0 +1,374 @@
+schema {
+    query: Query
+    mutation: Mutation
+}
+
+type Query {
+    getClients(id: ID, branch: Branch, depot: Depot, status: Status): ClientsPage!
+
+    getOrders(id: ID, from: AWSDate, to: AWSDate, user: User, branch: Branch, 
+              from: Client, to: Client, fromDepot: Depot, toDepot: Depot): OrdersPage!
+
+    getDepots(id: ID, code: String, branch: Branch): DepotsPage!
+
+    getBranches(id: ID, code: String): BranchesPage!
+
+    getVehicles(id: ID, code: String, plate: String, fleet: VehicleFleet,
+                type: String, chasis: String, country: String): VehiclesPage!
+
+    getVehicleFleets(id: ID, code: String): VehicleFleetsPage!
+
+    getUsers(id: ID, branch: String, code: String, reportsTo: User): UserPage!
+
+    getItineraries(id: ID, date: AWSDateTime, route: Route, user: User, vehicle: Vehicle): ItineraryPage!
+
+    getItinerariesStops(id: ID, date: AWSDateTime, order: Order, sequence: Int, status: Status): ItineraryStopPage!
+
+    getItinerariesActivies(id: ID, date: AWSDateTime, order: Order, stop: ItineraryStop,
+                           user: User, type: ActivityType): ItineraryActivityPage!
+
+    getRoutes(id: ID, code: String, type: RouteType, depot: Depot, status: Status, user: User): RoutesPage!
+    
+}
+
+type Mutation {
+
+}
+
+type Client {
+    id: ID!
+    branch: Branch
+    depot: Depot
+	zone: Zone
+	phone: AWSPhone
+    email: AWSEmail
+    status: Status
+	timeWindow: TimeWindow
+	x: Float
+    y: Float
+	address: String
+    customData: CustomTemplate
+    dateCreateRegister: AWSDateTime
+    dateModifiedRegister: AWSDateTime
+    dateModifiedXYRegister: AWSDateTime
+}
+
+type TimeWindow {
+    id: ID!
+    name: String!
+    description: String
+    data: AWSJSON
+}
+
+type Depot {
+    id: ID!
+	name: String
+    code: String
+	description: String
+	status: Status
+	x: Float
+    y: Float
+	branch: Branch
+	specialtyNames: [String]
+    reloadAllowed: Boolean
+    timeWindow: TimeWindow
+}
+
+type Branch {
+    branchId: ID!
+	code: String
+	description: String
+    observation: String
+	dateCreateRegister: AWSDateTime
+}
+
+type Zone {
+    id: ID!
+    code: String
+    description: String
+    observation: String
+    shape: String  # [Shape] [geometry] NULL, binary data
+}
+
+type User {
+    id: ID!
+	profile: UserProfile  # TODO: Need to review taking into account Cognito
+	branch: Branch
+	code: String
+	description: String
+	username: String
+	phone: AWSPhone
+    mobile: AWSPhone
+    email: AWSEmail
+	status: Status
+    dateCreateRegister: AWSDateTime
+    dateModifiedRegister: AWSDateTime
+    dateModifiedXYRegister: AWSDateTime
+	licenseNumber: String
+	licenseExpiration: AWSDate
+	healthCardType: Int
+	healthCardNumber: Int
+	healthCardExpiration: AWSDate
+	driverType: Int 
+	documentType: Int
+    documentId: Int
+	address: String
+	reportsTo: User	
+    modifiedBy: User
+}
+
+type UserProfile {
+    id: ID!
+    description: String!
+    status: Status
+}
+
+type Itinerary {
+    id: ID!
+	date: AWSDateTime
+	route: Route
+	user: User
+	vehicle: Vehicle
+	description: String
+	dateCreateRegister: AWSDateTime
+	modifiedBy: User
+	assignmentType: String
+	solutionType: String
+	startTime: AWSDateTime
+	endTime: AWSDateTime
+}
+
+type Route {
+    id: ID!
+    code: String
+    description: String
+    type: RouteType
+    depot: Depot
+    status: Status
+    user: User  # To Review: Itinerary and route could have different users?
+    arrivalLoadTime: AWSDateTime
+    arrivalTime: AWSDateTime
+    departureTime: AWSDateTime
+    dateCreateRegister: AWSDateTime
+    dateModifiedRegister: AWSDateTime
+}
+
+type RouteType {
+    id: ID!
+    description: String
+    status: Status
+}
+
+type Vehicle {
+    id: ID!
+	code: String
+	user: User
+	fleet: VehicleFleet
+	type: VehicleType
+	deviceID: Int
+	group: String
+	status: Status
+	brand: String
+	model: String
+    color: String
+	plate: String
+	chasis: String
+	year: Int
+	fuelConsumption: Int
+	country: String
+	dateTime: AWSDateTime
+	lastPositionData: String
+	depot: Depot
+	distributionChannel: Int
+	companyVehicleId: Int
+	typeOfUse: Int
+	startDepot: Depot
+	endDepot: Depot
+	maxVolume: Float
+    maxVolume1: Float
+    maxVolume2: Float
+    maxVolume3: Float
+	maxWeight: Float
+	maxOrders: Int
+    maxCashValue: Float
+	specialtyNames: [String]
+	x: Float
+	y: Float
+	shape: String
+	integrationStatus: Status
+}
+
+type VehicleFleet {
+    id: ID!
+	code: Int
+	description: String
+	address: String
+    phone: AWSPhone
+    contact: String 
+    email: AWSEmail
+    userName: String
+	status: Status
+    dateCreateRegister: AWSDateTime
+}
+
+# How to enable different set of Vehicle types for different tenants?
+enum VehicleType {
+    ONFOOT
+    BICYCLE
+    MOTORCYCLE
+    CAR
+    TRUCK
+}
+
+type Order {
+    id: ID!
+	status: Status
+	fromClient: Client
+    fromDepot: Depot
+    toClient: Client
+    toDepot: Depot
+	orderNumber: String
+    priority: Int
+    serviceType: Int
+    description: String
+	observation: String
+	orderDate: AWSDateTime
+    orderItems: CustomTemplate
+	weight: Float
+    volumeLength: Float
+	volumeWidth: Float
+	volumeHeight: Float
+	volume: Float
+	collectPayment: Boolean 
+	paymentType: PaymentType  
+	specialtyNames: [String]  
+	dateCreateRegister: AWSDateTime
+    dateModifiedRegister: AWSDateTime
+	user: User
+	itineraryStop: ItineraryStop
+	dateCollect: AWSDateTime
+	wasPayed: Boolean
+	creditNote: String 
+	otherObservation: String
+	branch: Branch
+}
+
+type ItineraryStop {
+    id: ID!
+	itinerary: Itinerary
+	order: Order
+	sequence: Int
+	sequenceActual: Int
+	date: AWSDateTime
+	status: Status
+	checkIn: AWSDateTime
+    checkInX: Float
+    checkInY: Float
+	checkOut: AWSDateTime
+    checkOutX: Float
+    checkOutY: Float
+    planStartTime: AWSDateTime
+    planEndTime: AWSDateTime
+	dateCreateRegister: AWSDateTime
+    dateModifiedRegister: AWSDateTime
+	modifiedBy: User
+	outItinerary: Int   # TODO: What's this for?
+}
+
+enum PaymentType {
+  CASH
+  CREDITCARD
+  CHECK
+}
+
+enum ActivityType {
+  DELIVERY
+  COLLECTION
+  DEVOLUTION
+}
+
+type ItineraryActivity {
+    id: ID!
+	itineraryStop: ItineraryStop
+    order: Order
+    user: User
+    type: ActivityType
+	date: AWSDateTime
+	observation: String
+    description: String
+	status: Status
+	photo1: String
+	photo2: String
+    photo3: String
+    signature: String
+    receipt: String
+	paymentType: PaymentType
+	recipientName: String
+	recipientId: String
+	hasDevolution: Boolean
+	hasCollection: Boolean
+	customData: CustomTemplate
+}
+
+type Status {
+    id: ID!
+    description: String
+    code: String
+	dateCreateRegister: AWSDateTime
+}
+
+type CustomTemplate {
+    id: ID!
+    name: String!
+    data: AWSJSON
+}
+
+type ClientsPage {
+  clients: [Client!]
+  nextToken: String
+}
+
+type OrdersPage {
+  orders: [Order!]
+  nextToken: String
+}
+
+type DepotsPage {
+  depots: [Depot!]
+  nextToken: String
+}
+
+type VehiclesPage {
+  vehicles: [Vehicle!]
+  nextToken: String
+}
+
+type VehicleFleetsPage {
+  vehicleFleets: [VehicleFleet!]
+  nextToken: String
+}
+
+type UsersPage {
+  users: [User!]
+  nextToken: String
+}
+
+type ItineraryPage {
+  itineraries: [Itinerary!]
+  nextToken: String
+}
+
+type ItineraryStopPage {
+  stops: [ItineraryStop!]
+  nextToken: String
+}
+
+type ItineraryActivityPage {
+  activities: [ItineraryActivity!]
+  nextToken: String
+}
+
+type RoutePage {
+  routes: [Route!]
+  nextToken: String
+}

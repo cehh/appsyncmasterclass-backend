@@ -1,3 +1,8 @@
+# Myfiles
+.npmignore
+appsync.code-workspace
+.gitignore
+
 # Logs
 logs
 *.log
